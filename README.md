@@ -1,1 +1,2 @@
-# Trabajo práctico 2 - Archivos y memoria dinámica
+# Trabajo práctico 2
+# Archivos y memoria dinámica
