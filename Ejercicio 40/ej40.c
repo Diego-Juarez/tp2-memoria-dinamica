@@ -49,7 +49,7 @@ int main()
     do{
         printf("\nIngrese clave del registro: ");
         scanf("%u", &opc);
-    
+
         primero = funcion(archivo, opc, primero);
         printf("\nIngresar otra clave: 1\t\tSalir: 0 ");
         scanf("%u", &opc);
@@ -80,13 +80,16 @@ int main()
     // Se imprime registros salida.dat - no se pide en enunciado
 
     printf("\nRegistros agregados al archivo \"salida.dat\":\n");
-    archivo = fopen("salida.dat", "rb");
-    fread(&regs, sizeof(struct d), 1, archivo);
-    while(!feof(archivo)){
+    if ((archivo = fopen("salida.dat", "rb")) == NULL){
+        printf("\n--- No se han agregado registros al archivo \"salida.dat\" ---\n");
+        exit(0);
+    }else{
+        fread(&regs, sizeof(struct d), 1, archivo);
+        while(!feof(archivo)){
         printf("\nDescripcion: %-10s\t Potencia: %d\t Estado: %d\t\n", regs.desc, regs.potencia, regs.estado);
         fread(&regs, sizeof(struct d), 1, archivo);
+        }
     }
-
 
     fclose(archivo);
 
@@ -103,31 +106,43 @@ int main()
 
     struct pila *funcion(FILE * archivo, unsigned int id, struct pila *cima){
 
-        int i;
-        int largo;
-        char *letra;
+        
+        //Para inversion de palabra
+        char cadinv[60];
+        char *b;
+        char *a;
+
         struct o orden;
         struct d regs;
-
         struct pila *aux;
         struct pila *p;
         p = cima;
 
         FILE *bf;
-       
+        
         fseek(archivo, (long)(id - 1)* sizeof(struct o), 0);
         fread(&orden, sizeof(struct o), 1, archivo);
-        largo = strlen(orden.desc);
-        letra = &orden.desc[largo - 1];
-        printf("\nDescripcion invertida: ");
-        for(i = largo; i > 0; i--){
-            printf("%c", *letra--);
+
+        if(orden.id == id){
+
+        b = &orden.desc[0];
+        a = cadinv;
+        while(*b) b++;
+        b--;
+        while(b != &orden.desc[0]){
+            *a = *b;
+            b--;
+            a++;
         }
+        *a = *b;
+        a++;
+        *a = '\0';
+        printf("\nDescripcion invertida: %s", cadinv);
         printf("\n");
 
 
 
-        printf("\nCampo estado antes del cambio del bit 3 = %u\n", orden.estado);
+        //printf("\nCampo estado antes del cambio del bit 3 = %u\n", orden.estado);
 
 
         orden.estado = orden.estado ^ (1 << 3);
@@ -139,7 +154,7 @@ int main()
         fseek(archivo, (long)(-1)* sizeof(struct o), 1);
         fread(&orden, sizeof(struct o), 1, archivo);
 
-        printf("\nCampo estado luego del cambio del bit 3 = %u\n", orden.estado);
+        //printf("\nCampo estado luego del cambio del bit 3 = %u\n", orden.estado);
 
         if(orden.estado & (1 << 0) && orden.estado & (1 << 2)){
             aux = (struct pila *)malloc(sizeof(struct pila));
@@ -161,6 +176,9 @@ int main()
 
         }
 
+        }else{
+            printf("\nNo se ha registrado esa clave.\n");
+        }
 
         return p;
 
